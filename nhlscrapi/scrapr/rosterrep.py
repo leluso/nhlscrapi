@@ -48,7 +48,7 @@ class RosterRep(ReportLoader):
             s = s.strip()
             return '(C)' not in s and '(A)' not in s
 
-        r = { }
+        r = { 0: 0 }
         for p in bl:
             txt = p.xpath('.//text()')
             if len(txt) and '#' not in txt[0]:
@@ -58,6 +58,9 @@ class RosterRep(ReportLoader):
                 # need some unique key
                 num = int(txt[0]) if txt[0].isdigit() else len(r.keys())
                 r[num] = { 'position': txt[1], 'name': txt[2] }
+
+        if r[0] == 0:
+            r.pop(0)
 
         return r
 
