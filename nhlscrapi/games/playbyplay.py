@@ -39,10 +39,10 @@ class Play(object):
 
     def __str__(self):
         return "{play}-{event_type} @ {time} of per. {period}".format({
-            'play': self.play_num,
             'event_type': self.event.event_type,
             'time': self.time,
             'period': self.period,
+            'play': self.play_num,
         })
 
 class PlayByPlay(RepScrWrap):
