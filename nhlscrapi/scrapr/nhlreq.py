@@ -17,7 +17,7 @@ class NHLCn(object):
     def __html_rep(self, game_key, rep_code):
         """Retrieves the nhl html reports for the specified game and report code"""
         seas, gt, num = game_key.to_tuple()
-        url = [ self.__domain, "scores/htmlreports/", str(seas-1), str(seas),
+        url = [ self.__domain, "scores/htmlreports/", str(seas), str(seas+1),
                 "/", rep_code, "0", str(gt), ("%04i" % (num)), ".HTM" ]
         url = ''.join(url)
 
