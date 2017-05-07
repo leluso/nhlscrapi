@@ -38,7 +38,7 @@ class Play(object):
         """
 
     def __str__(self):
-        return "{play}-{event_type} @ {time} of per. {period}".format({
+        return "{event_type}.{play} @ {time} of per. {period}".format({
             'event_type': self.event.event_type,
             'time': self.time,
             'period': self.period,
