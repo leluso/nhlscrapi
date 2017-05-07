@@ -38,12 +38,12 @@ class Play(object):
         """
 
     def __str__(self):
-        return "{event_type}.{play} @ {time} of per. {period}".format({
-            'event_type': self.event.event_type,
-            'time': self.time,
-            'period': self.period,
-            'play': self.play_num,
-        })
+        return "{event_type}.{play} @ {time} of per. {period}".format(
+            event_type=self.event_type,
+            play=self.play_num,
+            time=self.time,
+            period=self.period,
+        )
 
 class PlayByPlay(RepScrWrap):
     """
