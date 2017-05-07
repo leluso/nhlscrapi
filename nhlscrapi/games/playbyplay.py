@@ -37,6 +37,14 @@ class Play(object):
         the given type of play
         """
 
+    def __str__(self):
+        return "{play_no}-{event_type} @ {time} of per. {period}".format({
+            'play_no': self.play_num,
+            'event_type': self.event.event_type
+            'time': self.time,
+            'period': self.period,
+        })
+
 class PlayByPlay(RepScrWrap):
     """
     Aggregator of :py:class:`.Play` objects that maintains the play-by-play data for a given game. Allows for
