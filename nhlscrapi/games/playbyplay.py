@@ -44,6 +44,9 @@ class Play(object):
             time=self.time,
             period=self.period,
         )
+    
+    def __repr__(self):
+        return self.__str__()
 
 class PlayByPlay(RepScrWrap):
     """
