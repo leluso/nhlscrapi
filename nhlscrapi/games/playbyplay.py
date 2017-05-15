@@ -33,7 +33,7 @@ class Play(object):
         
         self.state = {
             'home': len(self.home_on_ice),
-            'away': len(self.away_on_ice),
+            'away': len(self.vis_on_ice),
         }
 
         self.event = event
