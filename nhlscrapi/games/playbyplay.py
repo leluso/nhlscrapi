@@ -30,6 +30,11 @@ class Play(object):
 
         self.home_on_ice = home_on_ice
         """Home skaters on the ice. ``{ num: [position, name] }``"""
+        
+        self.state = {
+            'home': len(self.home_on_ice),
+            'away': len(self.away_on_ice),
+        }
 
         self.event = event
         """
