@@ -30,10 +30,10 @@ class Play(object):
 
         self.home_on_ice = home_on_ice
         """Home skaters on the ice. ``{ num: [position, name] }``"""
-        
+
         self.state = {
-            'home': len(self.home_on_ice),
-            'away': len(self.away_on_ice),
+            'home': len([on_ice for on_ice in self.home_on_ice.items() if on_ice[0] != 'G']),
+            'away': len([on_ice for on_ice in self.home_on_ice.items() if on_ice[0] != 'G']),
         }
 
         self.event = event
@@ -49,7 +49,7 @@ class Play(object):
             time=self.time,
             period=self.period,
         )
-    
+
     def __repr__(self):
         return self.__str__()
 
@@ -125,4 +125,3 @@ class PlayByPlay(RepScrWrap):
         teams = [ self.matchup['home'], self.matchup['away'] ]
         for _, cs in self.cum_stats.items():
             cs.initialize_teams(teams)
-
