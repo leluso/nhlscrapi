@@ -13,6 +13,13 @@ class Event(object):
     """Base class for event codes in the RTSS play-by-play reports"""
     def __init__(self, event_type = EventType.Event, desc = ""):
         self.event_type = event_type
+        self.event_type_str = (
+            'Event',
+            'ShotAttempt', 'Shot', 'Block', 'Miss', 'Goal',
+            'Hit', 'FaceOff', 'Giveaway', 'Takeaway', 'Penalty', 'Stoppage',
+            'ShootOutAtt', 'ShootOutGoal',
+            'PeriodEnd', 'GameEnd', 'ShootOutEnd',
+        )[self.event_type]
         """The :py:class:`.EventType` enum values corresponding to the event."""
 
         self.desc = desc

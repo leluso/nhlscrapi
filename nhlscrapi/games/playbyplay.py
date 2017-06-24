@@ -32,8 +32,8 @@ class Play(object):
         """Home skaters on the ice. ``{ num: [position, name] }``"""
 
         self.state = {
-            'home': len([on_ice for on_ice in self.home_on_ice.values() if on_ice[0] != 'G']),
-            'away': len([on_ice for on_ice in self.home_on_ice.values() if on_ice[0] != 'G']),
+            'home': len([on_ice for on_ice in self.home_on_ice.values() if 'G' not in on_ice[0].upper()]),
+            'away': len([on_ice for on_ice in self.home_on_ice.values() if 'G' not in on_ice[0].upper()]),
         }
 
         self.event = event
@@ -42,13 +42,16 @@ class Play(object):
         the given type of play
         """
 
-    def __str__(self):
+    def toString(self):
         return "{event_type}.{play} @ {time} of per. {period}".format(
             event_type=self.event,
             play=self.play_num,
             time=self.time,
             period=self.period,
         )
+
+    def __str__(self):
+        return self.toString()
 
     def __repr__(self):
         return self.__str__()
