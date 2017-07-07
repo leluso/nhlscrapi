@@ -32,8 +32,8 @@ class Play(object):
         """Home skaters on the ice. ``{ num: [position, name] }``"""
 
         self.state = {
-            'home': len([on_ice for on_ice in self.home_on_ice.values() if 'G' not in on_ice[0].upper()]),
-            'away': len([on_ice for on_ice in self.home_on_ice.values() if 'G' not in on_ice[0].upper()]),
+            'home': len([on_ice for on_ice in self.home_on_ice.values() if 'G' not in on_ice[1]]),
+            'away': len([on_ice for on_ice in self.vis_on_ice.values() if 'G' not in on_ice[1]]),
         }
 
         self.event = event
