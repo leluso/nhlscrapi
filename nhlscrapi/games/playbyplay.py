@@ -42,16 +42,13 @@ class Play(object):
         the given type of play
         """
 
-    def toString(self):
+    def __str__(self):
         return "{event_type}.{play} @ {time} of per. {period}".format(
             event_type=self.event,
             play=self.play_num,
             time=self.time,
             period=self.period,
         )
-
-    def __str__(self):
-        return self.toString()
 
     def __repr__(self):
         return self.__str__()
@@ -80,8 +77,8 @@ class PlayByPlay(RepScrWrap):
         print('Final Score:\t{}'.format(shot_cts.total))
     """
 
-    def __init__(self, game_key, cum_stats = {}, init_cs_teams=True):
-        super(PlayByPlay, self).__init__(game_key, RTSS(game_key))
+    def __init__(self, game_key, cum_stats = {}, init_cs_teams=True, game=None):
+        super(PlayByPlay, self).__init__(game_key, RTSS(game_key, game))
 
         self.cum_stats = cum_stats
         """Dictionary of :py:class:`.AccumulateStats` to be computed"""
