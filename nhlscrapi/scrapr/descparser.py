@@ -424,6 +424,10 @@ def parse_penalty_08(event):
     event.zone = parse_matches.group('zone')
     event.offence = parse_matches.group('offence')
     event.length = parse_matches.group('penalty_length')
+    try:
+        event.severity = (parse_matches.group('penalty_class') or 'min') + 'or'
+    except:
+        event.severity = 'minor'
 
 
 
