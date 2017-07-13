@@ -366,6 +366,7 @@ penalty_with_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s+#(?P<against_player_n
 penalty_without_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s+#(?P<against_player_number>[0-9]{1,2})\s+(?P<against_player_name>[A-Z \.\-\']+)\W+(?P<offence>[A-z\s\.\-]+)(\((?P<penalty_class>\w+)\))?\((?P<penalty_length>\d+)\s+min\),? ((?P<zone>Def|Off|Neu)\.\s+Zone)?.*"
 bench_penalty_re = r"(?P<team_against>[A-Z\.]{2,3})\s+TEAM\W+(?P<offence>[A-z\s\.\-\/]+)(\((\w+)\))?\((?P<penalty_length>\d+)\s+min\)\s+Served By: \#(?P<serving_player_number>[0-9]{1,2})\s+(?P<serving_player_name>[A-Z \.\-\']+),?\s+((?P<zone>Def|Off|Neu)\.\s+Zone)?.*"
 served_and_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s+#(?P<against_player_number>[0-9]{1,2})\s+(?P<against_player_name>[A-Z \.\-\']+)\W+(?P<offence>[A-z\s\.\-\']+)(\((?P<penalty_class>\w+)\))?\((?P<penalty_length>\d+)\s+min\)\s+Served By: \#(?P<serving_player_number>[0-9]{1,2})\s+(?P<serving_player_name>[A-Z \.\-\']+),\s+((?P<zone>Def|Off|Neu)\.\s+Zone)?\s+(Drawn By: (?P<drawn_team>[A-Z\.]{2,3})\s+#(?P<drawn_player_number>[0-9]{1,2})\s+(?P<drawn_player_name>[A-Z \.\-\']+).*).*"
+served_and_drawn_bench_re = r"(?P<team_against>[A-Z\.]{2,3})\s+TEAM\W+(?P<offence>[A-z\s\.\-\/]+)(\((\w+)\))?\((?P<penalty_length>\d+)\s+min\)\s+Served By: \#(?P<serving_player_number>[0-9]{1,2})\s+(?P<serving_player_name>[A-Z \.\-\']+),?((?P<zone>Def|Off|Neu)\.\s+Zone)?\s+(Drawn By: (?P<drawn_team>[A-Z\.]{2,3})\s+#(?P<drawn_player_number>[0-9]{1,2})\s+(?P<drawn_player_name>[A-Z \.\-\']+).*).*"
 
 def parse_penalty_08(event):
     desc = event.desc.replace('\\', '')
@@ -386,22 +387,38 @@ def parse_penalty_08(event):
 
     elif 'Served By' in desc and 'Drawn By' in desc:
         parse_matches = re.match(served_and_drawn_re, desc)
-        event.participants = ({
-            'name': parse_matches.group('against_player_name'),
-            'num': int(parse_matches.group('against_player_number')),
-            'team': team_abbr_parser(parse_matches.group('team_against')),
-            'playerType': 'penaltyOn',
-        }, {
-            'name': parse_matches.group('serving_player_name'),
-            'num': int(parse_matches.group('serving_player_number')),
-            'team': team_abbr_parser(parse_matches.group('team_against')),
-            'playerType': 'servedBy',
-        }, {
-            'name': parse_matches.group('drawn_player_name'),
-            'num': parse_matches.group('drawn_player_number'),
-            'team': team_abbr_parser(parse_matches.group('drawn_team')),
-            'playerType': 'drewBy',
-        })
+
+        if parse_matches:
+            event.participants = ({
+                'name': parse_matches.group('against_player_name'),
+                'num': int(parse_matches.group('against_player_number')),
+                'team': team_abbr_parser(parse_matches.group('team_against')),
+                'playerType': 'penaltyOn',
+            }, {
+                'name': parse_matches.group('serving_player_name'),
+                'num': int(parse_matches.group('serving_player_number')),
+                'team': team_abbr_parser(parse_matches.group('team_against')),
+                'playerType': 'servedBy',
+            }, {
+                'name': parse_matches.group('drawn_player_name'),
+                'num': parse_matches.group('drawn_player_number'),
+                'team': team_abbr_parser(parse_matches.group('drawn_team')),
+                'playerType': 'drewBy',
+            })
+
+        else:
+            parse_matches = re.match(served_and_drawn_bench_re, desc)
+            event.participants = ({
+                'name': parse_matches.group('serving_player_name'),
+                'num': int(parse_matches.group('serving_player_number')),
+                'team': team_abbr_parser(parse_matches.group('team_against')),
+                'playerType': 'servedBy',
+            }, {
+                'name': parse_matches.group('drawn_player_name'),
+                'num': parse_matches.group('drawn_player_number'),
+                'team': team_abbr_parser(parse_matches.group('drawn_team')),
+                'playerType': 'drewBy',
+            })
 
     elif 'Served By' in desc:
         parse_matches = re.match(bench_penalty_re, desc)
