@@ -369,8 +369,6 @@ served_and_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s+#(?P<against_player_num
 
 def parse_penalty_08(event):
     desc = eval(event.desc[1:])
-    print(desc)
-    #print(event.desc.decode("utf-8", "strict"))
     parse_matches = re.match(penalty_with_drawn_re, desc)
 
     if parse_matches:
