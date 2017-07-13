@@ -368,7 +368,7 @@ bench_penalty_re = r"(?P<team_against>[A-Z\.]{2,3})\s+TEAM\W+(?P<offence>[A-z\s\
 served_and_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s+#(?P<against_player_number>[0-9]{1,2})\s+(?P<against_player_name>[A-Z\s\.\-]+)\W+(?P<offence>[A-z\s\.\-]+)(\((?P<penalty_class>\w+)\))?\((?P<penalty_length>\d+)\s+min\)\s+Served By: \#(?P<serving_player_number>[0-9]{1,2})\s+(?P<serving_player_name>[A-Z\s\.\-]+),\s+(?P<zone>Def|Off|Neu)\.\s+Zone\s+(Drawn By: (?P<drawn_team>[A-Z\.]{2,3})\s+#(?P<drawn_player_number>[0-9]{1,2})\s+(?P<drawn_player_name>[A-Z\s\.\-]+).*).*"
 
 def parse_penalty_08(event):
-    desc = eval(event.desc[1:])
+    desc = event.desc
     parse_matches = re.match(penalty_with_drawn_re, desc)
 
     if parse_matches:

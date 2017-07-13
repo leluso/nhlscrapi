@@ -141,7 +141,7 @@ class PlayParser(object):
             skater_ct=len(p['vis_on_ice']) + len(p['home_on_ice']),
             game_type=self.game_type
         )
-        p['event'].desc = " ".join([str(t.encode('ascii', 'replace')) for t in d[c["desc"]].xpath("text()")])
+        p['event'].desc = " ".join([t for t in d[c["desc"]].xpath("text()")])
 
         p['event'].home_abbr = get_abbreviation(game.matchup['home'])
         p['event'].away_abbr = get_abbreviation(game.matchup['away'])
