@@ -3,10 +3,10 @@
 
 from datetime import datetime as dt
 
-MIN_SEASON = 2008
+MIN_SEASON = 2007
 """Oldest season currently supported"""
 
-MAX_SEASON = dt.today().year if dt.today().month < 10 else dt.today().year + 1
+MAX_SEASON = dt.today().year - 1 if dt.today().month < 10 else dt.today().year
 """Year of the most recent season. Seasons are denoted by the year in which they end, i.e. 2013-2014 is denoted 2014"""
 
 GAME_CT_DICT = {
