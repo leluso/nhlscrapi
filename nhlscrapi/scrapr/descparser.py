@@ -36,15 +36,24 @@ __num_name_re = re.compile('([0-9]*)(.*)')
 
 def team_num_name(s):
     # error report 600 and error report 672
-    tnn = s.split("#")
-    team = team_abbr_parser(tnn[0].strip())
-    m = __num_name_re.search(tnn[1])
-    if m:
-        name = m.group(2).strip()
-        num = int(m.group(1)) if len(m.group(1)) > 0 else -1
+    if '#' in s:
+        tnn = s.split("#")
+        team = team_abbr_parser(tnn[0].strip())
+        m = __num_name_re.search(tnn[1])
+        if m:
+            name = m.group(2).strip()
+            num = int(m.group(1)) if len(m.group(1)) > 0 else -1
+        else:
+            num = -1
+            name = ''
+
     else:
-        num = -1
-        name = ''
+        match_regex = r"(?P<team_abbr>[A-Z\.]{2,3})\s*(?P<player_num>[0-9]{1,2})\s*(?P<player_name>.+)"
+        match = re.match(match_regex, s)
+        team = match.group('team_abbr')
+        num = int(match.group('player_num'))
+        name = match.group('player_name')
+
     d = {
         "team": team,
         "num": num,
