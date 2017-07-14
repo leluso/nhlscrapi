@@ -58,25 +58,25 @@ def event_type_mapper(event_str, **kwargs):
   return EF.Create(e_type)
 
 
-def parse_event_desc(event, season = 2008):
+def parse_event_desc(event, season = 2007):
 
-    if event.event_type == ET.Shot and season >= 2008:
+    if event.event_type == ET.Shot and season >= 2007:
         dp.parse_shot_desc_08(event)
 #    elif event.event_type == ET.PenaltyShot:
 #        dp.parse_penalty_shot_desc_08(event)
-    elif event.event_type == ET.Goal and season >= 2008:
+    elif event.event_type == ET.Goal and season >= 2007:
         dp.parse_goal_desc_08(event)
-    elif event.event_type == ET.Miss and season >= 2008:
+    elif event.event_type == ET.Miss and season >= 2007:
         dp.parse_miss_08(event)
-    elif event.event_type == ET.FaceOff and season >= 2008:
+    elif event.event_type == ET.FaceOff and season >= 2007:
         dp.parse_faceoff_08(event)
-    elif event.event_type == ET.Hit and season >= 2008:
+    elif event.event_type == ET.Hit and season >= 2007:
         dp.parse_hit_08(event)
-    elif event.event_type == ET.Block and season >= 2008:
+    elif event.event_type == ET.Block and season >= 2007:
         dp.parse_block_08(event)
-    elif event.event_type == ET.Takeaway and season >= 2008:
+    elif event.event_type == ET.Takeaway and season >= 2007:
         dp.parse_takeaway_08(event)
-    elif event.event_type == ET.Giveaway and season >= 2008:
+    elif event.event_type == ET.Giveaway and season >= 2007:
         dp.parse_giveaway_08(event)
     elif event.event_type == ET.ShootOutGoal:
         dp.parse_shootout(event)
