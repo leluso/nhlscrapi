@@ -349,7 +349,9 @@ def parse_takeaway_08(event):
     tnn = team_num_name(str('team ' + s[0]))
     event.player_num = tnn["num"]
     event.player_name = tnn["name"]
-    event.zone = s[1]
+
+    if len(s) > 1:
+        event.zone = s[1]
 
     event.participants = (clean_player(dict(
         name=event.player_name,
@@ -452,3 +454,6 @@ def parse_shootout(event):
         event.shooter = team_num_name(' '.join(tnn))
     elif len(tnn) == 5:
         event.shooter = team_num_name(' '.join([tnn[0], tnn[3], tnn[4]]))
+
+    event.shooter['playerType'] = 'shooter'
+    event.participants = (event.shooter,)

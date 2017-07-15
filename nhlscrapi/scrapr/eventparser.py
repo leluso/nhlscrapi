@@ -80,6 +80,8 @@ def parse_event_desc(event, season = 2007):
         dp.parse_giveaway_08(event)
     elif event.event_type == ET.ShootOutGoal:
         dp.parse_shootout(event)
+    elif event.event_type == ET.ShootOutAtt:
+        dp.parse_shootout(event)
     elif event.event_type == ET.Penalty:
         dp.parse_penalty_08(event)
     else:
