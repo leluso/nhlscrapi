@@ -371,6 +371,7 @@ def parse_giveaway_08(event):
     parse_takeaway_08(event)
 
 
+# These are not being used but I want to remember them
 penalty_with_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s*#(?P<against_player_number>[0-9]{1,2})\s*(?P<against_player_name>[A-Z \.\-\']+)\W+(?P<offence>[A-z\s\.\-]+)(\((?P<penalty_class>\w+)\))?\((?P<penalty_length>\d+)\s*min\),?\s*((?P<zone>Def|Off|Neu)\.\s*Zone)?.*(Drawn By: (?P<drawn_team>[A-Z\.]{2,3})\s*#(?P<drawn_player_number>[0-9]{1,2})\s*(?P<drawn_player_name>[A-Z \.\-\']+).*).*"
 penalty_without_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s*#(?P<against_player_number>[0-9]{1,2})\s*(?P<against_player_name>[A-Z \.\-\']+)\W+(?P<offence>[A-z\s\.\-]+)(\((?P<penalty_class>\w+)\))?\((?P<penalty_length>\d+)\s*min\),?\s*((?P<zone>Def|Off|Neu)\.\s*Zone)?.*"
 bench_penalty_re = r"(?P<team_against>[A-Z\.]{2,3})\s*TEAM\W+(?P<offence>[A-z\s\.\-\/]+)(\((\w+)\))?\((?P<penalty_length>\d+)\s*min\)\s*Served By: \#(?P<serving_player_number>[0-9]{1,2})\s*(?P<serving_player_name>[A-Z \.\-\']+),?\s*((?P<zone>Def|Off|Neu)\.\s*Zone)?.*"
@@ -378,99 +379,58 @@ served_and_drawn_re = r"(?P<team_against>[A-Z\.]{2,3})\s*#(?P<against_player_num
 served_and_drawn_bench_re = r"(?P<team_against>[A-Z\.]{2,3})\s*TEAM\W+(?P<offence>[A-z\s\.\-\/]+)(\((\w+)\))?\((?P<penalty_length>\d+)\s*min\)\s*Served By: \#(?P<serving_player_number>[0-9]{1,2})\s*(?P<serving_player_name>[A-Z \.\-\']+),?((?P<zone>Def|Off|Neu)\.\s*Zone)?\s*(Drawn By:\s*(?P<drawn_team>[A-Z\.]{2,3})\s*#(?P<drawn_player_number>[0-9]{1,2})\s*(?P<drawn_player_name>[A-Z \.\-\']+).*).*"
 penalty_without_drawn_with_served_re = r"(?P<team_against>[A-Z\.]{2,3})\s*#(?P<against_player_number>[0-9]{1,2})\s*(?P<against_player_name>[A-Z \.\-\']+)\W+(?P<offence>[A-z\s\.\-]+)(\((?P<penalty_class>\w+)\))?\((?P<penalty_length>\d+)\s*min\),?\s*Served By: \#(?P<serving_player_number>[0-9]{1,2})\s*(?P<serving_player_name>[A-Z \.\-\']+),?\s*((?P<zone>Def|Off|Neu)\.\s*Zone)?.*"
 
+against_team_re = re.compile(r"^(?P<team_against>[A-Z\.]{2,3})")
+against_player_re = re.compile(r"^(?P<team_against>[A-Z\.]{2,3})\s*#(?P<against_player_number>[0-9]{1,2})\s*(?P<against_player_name>[A-Z \.\-\']+)")
+penalty_info_re = re.compile(r".*(?P<offence>[A-Z][a-z\s\.\-\'\/]+)(\((?P<penalty_class>\w+)\))?\((?P<penalty_length>\d+)\s*min\)")
+serving_player_re = re.compile(r".*Served By:\s*\#(?P<serving_player_number>[0-9]{1,2})\s*(?P<serving_player_name>[A-Z \.\-\']+)")
+drawn_player_re = re.compile(r".*Drawn By:\s*(?P<drawn_team>[A-Z\.]{2,3})\s*#(?P<drawn_player_number>[0-9]{1,2})\s*(?P<drawn_player_name>[A-Z \.\-\']+)")
+zone_re = re.compile(r".*((?P<zone>Def|Off|Neu)\.\s*Zone)")
+
 def parse_penalty_08(event):
     desc = event.desc.replace('\\', '')
-    parse_matches = re.match(penalty_with_drawn_re, desc)
 
-    if parse_matches:
-        event.participants = ({
-            'name': parse_matches.group('against_player_name'),
-            'num': int(parse_matches.group('against_player_number')),
-            'team': team_abbr_parser(parse_matches.group('team_against')),
+    match = against_team_re.match(desc)
+    against_team_abbr = team_abbr_parser(match.group('team_against'))
+
+    event.participants = []
+    match = against_player_re.match(desc)
+    if match:
+        event.participants.append({
+            'name': match.group('against_player_name'),
+            'num': int(match.group('against_player_number')),
+            'team': against_team_abbr,
             'playerType': 'penaltyOn',
-        }, {
-            'name': parse_matches.group('drawn_player_name'),
-            'num': parse_matches.group('drawn_player_number'),
-            'team': team_abbr_parser(parse_matches.group('drawn_team')),
+        })
+
+    match = serving_player_re.match(desc)
+    if match:
+        event.participants.append({
+            'name': match.group('serving_player_name'),
+            'num': int(match.group('serving_player_number')),
+            'team': against_team_abbr,
+            'playerType': 'servedBy',
+        })
+
+    match = drawn_player_re.match(desc)
+    if match:
+        event.participants.append({
+            'name': match.group('drawn_player_name'),
+            'num': int(match.group('drawn_player_number')),
+            'team': team_abbr_parser(match.group('drawn_team')),
             'playerType': 'drewBy',
         })
 
-    elif 'Served By' in desc and 'Drawn By' in desc:
-        parse_matches = re.match(served_and_drawn_re, desc)
-
-        if parse_matches:
-            event.participants = ({
-                'name': parse_matches.group('against_player_name'),
-                'num': int(parse_matches.group('against_player_number')),
-                'team': team_abbr_parser(parse_matches.group('team_against')),
-                'playerType': 'penaltyOn',
-            }, {
-                'name': parse_matches.group('serving_player_name'),
-                'num': int(parse_matches.group('serving_player_number')),
-                'team': team_abbr_parser(parse_matches.group('team_against')),
-                'playerType': 'servedBy',
-            }, {
-                'name': parse_matches.group('drawn_player_name'),
-                'num': parse_matches.group('drawn_player_number'),
-                'team': team_abbr_parser(parse_matches.group('drawn_team')),
-                'playerType': 'drewBy',
-            })
-
-        else:
-            parse_matches = re.match(served_and_drawn_bench_re, desc)
-            event.participants = ({
-                'name': parse_matches.group('serving_player_name'),
-                'num': int(parse_matches.group('serving_player_number')),
-                'team': team_abbr_parser(parse_matches.group('team_against')),
-                'playerType': 'servedBy',
-            }, {
-                'name': parse_matches.group('drawn_player_name'),
-                'num': parse_matches.group('drawn_player_number'),
-                'team': team_abbr_parser(parse_matches.group('drawn_team')),
-                'playerType': 'drewBy',
-            })
-
-    elif 'Served By' in desc:
-        parse_matches = re.match(bench_penalty_re, desc)
-
-        if parse_matches:
-            event.participants = ({
-                'name': parse_matches.group('serving_player_name'),
-                'num': int(parse_matches.group('serving_player_number')),
-                'team': team_abbr_parser(parse_matches.group('team_against')),
-                'playerType': 'servedBy',
-            },)
-
-        else:
-            parse_matches = re.match(penalty_without_drawn_with_served_re, desc)
-            event.participants = ({
-                'name': parse_matches.group('against_player_name'),
-                'num': int(parse_matches.group('against_player_number')),
-                'team': team_abbr_parser(parse_matches.group('team_against')),
-                'playerType': 'penaltyOn',
-            }, {
-                'name': parse_matches.group('serving_player_name'),
-                'num': int(parse_matches.group('serving_player_number')),
-                'team': team_abbr_parser(parse_matches.group('team_against')),
-                'playerType': 'servedBy',
-            })
-
-    else:
-        parse_matches = re.match(penalty_without_drawn_re, desc)
-        event.participants = ({
-              'name': parse_matches.group('against_player_name'),
-              'num': int(parse_matches.group('against_player_number')),
-              'team': team_abbr_parser(parse_matches.group('team_against')),
-              'playerType': 'penaltyOn',
-          },)
-
-    event.zone = parse_matches.group('zone')
-    event.offence = parse_matches.group('offence')
-    event.length = parse_matches.group('penalty_length')
+    match = penalty_info_re.match(desc)
+    event.offence = match.group('offence').strip()
+    event.length = int(match.group('penalty_length'))
     try:
-        event.severity = (parse_matches.group('penalty_class') or 'min') + 'or'
+        event.severity = (match.group('penalty_class') or 'min') + 'or'
     except:
         event.severity = 'minor'
+
+    match = zone_re.match(desc)
+    if match:
+        event.zone = match.group('zone')
 
 
 
