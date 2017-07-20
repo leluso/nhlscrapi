@@ -113,73 +113,79 @@ def parse_shot_desc_08(event):
 # NYR #13 CARCILLO(4), Wrist, Off. Zone, 11 ft. Assists: #15 DORSETT(4); #22 BOYLE(12)
 # NYR #21 STEPAN(10), Penalty Shot, Wrist, Off. Zone, 10 ft.
 # MTL #25 DE LA ROSE(1), Deflected, Off. Zone, 13 ft. Assists: #8 PRUST(10); #76 SUBBAN(35)
+
+team_for_re = re.compile(r"^(?P<team_for>[A-Z\.]{2,3})")
+shooter_re = re.compile(r"^(?P<team_for>[A-Z\.]{2,3})\s*#(?P<shooter_number>[0-9]{1,2})\s*(?P<shooter_name>[A-Z \.\-\']+)\(?(?P<season_goals>[0-9]*)\)")
+a1_re = re.compile(r".*Assists?:\s*#(?P<a1_num>[0-9]{1,2})\s*(?P<a1_name>[A-Z \.\-\']+)\((?P<a1_a_count>\d*)\)")
+a2_re = re.compile(r".*;\s*#(?P<a2_num>[0-9]{1,2})\s*(?P<a2_name>[A-Z \.\-\']+)\((?P<a2_a_count>[0-9]*)\)")
+zone_re = re.compile(r".*(?P<zone>[A-z]{3})\.\s*Zone")
+distance_re = re.compile(r".*(?P<distance>[0-9]+)\s* ft")
+shot_type_re = re.compile(r".*, (?P<shot_type>[A-z\-]+),")
+
 def parse_goal_desc_08(event):
-
     event.is_penalty_shot = 'penalty' in event.desc.lower()
+    event.participants = []
 
-    if not event.is_penalty_shot:
-        s = event.desc.split(":")
-        # assists dictionary = { number, [ name, season total ] }
-        a_d = { }
-        if len(s) > 1:
-            # assists by
-            a = [si.strip() for si in s[1].split(";") if si.strip() != ""]
-            for ai in a:
-                a_l = assist_from(ai)
-                a_d[a_l[0]] = a_l[1:3]
+    match = team_for_re.match(event.desc)
+    if match:
+        team_for = team_abbr_parser(match.group('team_for'))
 
-        event.assists = a_d
+        match = shooter_re.match(event.desc)
+        if match:
+            shooter_number = int(match.group('shooter_number'))
+            shooter_name = match.group('shooter_name')
 
-        s = s[0].split(",")
-        s = [e.strip() for e in s if e not in ["Assists", "Assist", "A"]]
-    else:
-        s = event.desc.split(',')
-        s = rem_penalty_shot_desc(s)
+            event.shooter = {
+                'name': shooter_name,
+                'num': shooter_number,
+                'team': team_for,
+                'playerType': 'scorer',
+            }
+            event.participants.append(event.shooter)
+            event.scorer = event.shooter
 
-    # base case
-    if len(s) > 3:
-        event.shot_type = s[1]
-        event.zone = s[2]
-        event.dist = get_ft(s[3])
-    else:
-        # this is really ugly
-        try:
-            event.dist = get_ft(s[-1])
-            if 'zone' in s[-2].lower():
-                event.zone = s[-2]
-            else:
-                event.shot_type = s[-2]
-        except:
-            if 'zone' in s[-1].lower():
-                event.zone = s[-2]
-        else:
-            event.shot_type = s[-2]
+        event.assists = []
 
-    scorer = s[0].split(" ")
+        match = a1_re.match(event.desc)
+        if match:
+            a1_number = int(match.group('a1_num'))
+            a1_name = match.group('a1_name')
 
-    # account for two word last names
-    if len(scorer) == 4:
-        scorer[2] = scorer[2] + " " + scorer[3]
+            a1 = {
+                'name': a1_name,
+                'num': a1_number,
+                'team': team_for,
+                'playerType': 'assist'
+            }
+            event.participants.append(a1)
+            event.assists.append(a1)
 
-    num_str = scorer[1].replace('#','')
-    pl_tot = [e.strip() for e in ' '.join(scorer[2:]).split("(")]
+        match = a2_re.match(event.desc)
+        if match:
+            a2_number = int(match.group('a2_num'))
+            a2_name = match.group('a2_name')
 
-    event.shooter = {
-        'team': team_abbr_parser(scorer[0]),
-        'num': int(num_str) if num_str.isdigit() else -1,
-        'name': pl_tot[0]
-    }
+            a2 = {
+                'name': a2_name,
+                'num': a2_number,
+                'team': team_for,
+                'playerType': 'assist'
+            }
+            event.participants.append(a2)
+            event.assists.append(a2)
 
-    shooter = event.shooter
-    shooter['playerType'] = 'scorer'
-    event.participants = [shooter]
 
-    if hasattr(event, 'assists') and event.assists:
-        assists = map(lambda a: dict(name='-'.join(a[:-1]), num=a[-1], playerType='assist'), event.assists.values())
-        event.participants += list(assists)
+    match = zone_re.match(event.desc)
+    if match:
+        event.zone = match.group('zone')
 
-    pl_tot[1] = pl_tot[1].replace('(','').replace(')','')
-    event.shooter_seas_tot = int(pl_tot[1]) if pl_tot[1].isdigit() else -1
+    match = distance_re.match(event.desc)
+    if match:
+        event.dist = int(match.group('distance'))
+
+    match = shot_type_re.match(event.desc)
+    if match:
+        event.shot_type = match.group('shot_type')
 
 
 def assist_from(a):
