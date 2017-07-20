@@ -1,10 +1,6 @@
 import re
 from nhlscrapi.scrapr.teamnameparser import team_abbr_parser
 
-def clean_player(player):
-    player['name'] = re.sub("[\\\']", '', player['name'])
-    return player
-
 # default parser does nothing
 def default_desc_parser(event):
     pass
@@ -106,7 +102,7 @@ def parse_shot_desc_08(event):
     event.dist = get_ft(s[3]) if len(s) > 3 else -1
 
     event.shooter['playerType'] = 'shooter'
-    event.participants = (clean_player(event.shooter),)
+    event.participants = (event.shooter,)
 
 
 #############################
@@ -174,13 +170,13 @@ def parse_goal_desc_08(event):
         'name': pl_tot[0]
     }
 
-    shooter = clean_player(event.shooter)
+    shooter = event.shooter
     shooter['playerType'] = 'scorer'
     event.participants = [shooter]
 
     if hasattr(event, 'assists') and event.assists:
         assists = map(lambda a: dict(name='-'.join(a[:-1]), num=a[-1], playerType='assist'), event.assists.values())
-        event.participants += list(map(clean_player, assists))
+        event.participants += list(assists)
 
     pl_tot[1] = pl_tot[1].replace('(','').replace(')','')
     event.shooter_seas_tot = int(pl_tot[1]) if pl_tot[1].isdigit() else -1
@@ -239,7 +235,7 @@ def parse_miss_08(event):
         event.dist = get_ft(s[4])
 
     event.shooter['playerType'] = 'shooter'
-    event.participants = (clean_player(event.shooter),)
+    event.participants = (event.shooter,)
 
 
 
@@ -270,7 +266,7 @@ def parse_faceoff_08(event):
             tnn['playerType'] = 'winner'
             tnn2['playerType'] = 'loser'
 
-        event.participants = (clean_player(tnn), clean_player(tnn2))
+        event.participants = (tnn, tnn2)
 
     except:
         print(vs)
@@ -295,7 +291,7 @@ def parse_hit_08(event):
     event.hit_by['playerType'] = 'hitter'
     event.player_hit['playerType'] = 'hittee'
 
-    event.participants = (clean_player(event.hit_by), clean_player(event.player_hit))
+    event.participants = (event.hit_by, event.player_hit)
 
     event.zone = p_z[1].strip() if len(p_z) > 1 else ''
 
@@ -328,7 +324,7 @@ def parse_block_08(event):
 
     event.shooter['playerType'] = 'shooter'
     event.blocked_by['playerType'] = 'blocker'
-    event.participants = (clean_player(event.shooter), clean_player(event.blocked_by))
+    event.participants = (event.shooter, event.blocked_by)
 
 
 
@@ -353,12 +349,12 @@ def parse_takeaway_08(event):
     if len(s) > 1:
         event.zone = s[1]
 
-    event.participants = (clean_player(dict(
+    event.participants = (dict(
         name=event.player_name,
         num=event.player_num,
         team=event.team,
         playerType='playerID', # Butchering this for nhlscraper
-    )),)
+    ),)
 
 
 
@@ -423,8 +419,13 @@ def parse_penalty_08(event):
         })
 
     match = penalty_info_re.match(desc)
-    event.offence = match.group('offence').strip()
-    event.length = int(match.group('penalty_length'))
+    if match:
+        event.offence = match.group('offence').strip()
+        event.length = int(match.group('penalty_length'))
+    else:
+        event.offence = 'Unknown'
+        event.length = 2
+
     try:
         event.severity = (match.group('penalty_class') or 'min') + 'or'
     except:

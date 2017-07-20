@@ -3,7 +3,7 @@ import requests
 
 class NHLCn(object):
     """
-    Builds the URLs, makes the HTTP calls and retreives the raw HTML associated with various NHL report data. If
+    Builds the URLs, makes the HTTP calls and retrieves the raw HTML associated with various NHL report data. If
     an error occurs in the retrieval process, the error is recorded in ``req_err``.
     """
     __domain = 'http://www.nhl.com/'
