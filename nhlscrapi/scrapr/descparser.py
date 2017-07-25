@@ -76,6 +76,8 @@ def rem_penalty_shot_desc(s):
 # NYR ONGOAL - #6 STRALMAN, Slap, Off. Zone, 65 ft.
 # NYR ONGOAL - #62 HAGELIN, Penalty Shot, Backhand, Off. Zone, 10 ft.
 # shot type might have - in it (wrap-around)
+shot_type_re = re.compile(r".*, (?P<shot_type>[A-z\-]+),")
+
 def parse_shot_desc_08(event):
 
     # split to get s[0] team - shooter, s[1] shot type, s[2] zone, s[3] distance
@@ -93,13 +95,16 @@ def parse_shot_desc_08(event):
     event.shooter = team_num_name(" ".join(st))
 
     # s[1] ' shottype '
-    event.shot_type = s[1].strip() if len(s) > 1 else ""
+    #event.shot_type = s[1].strip() if len(s) > 1 else ""
 
     # s[2] has zone ' Off. Zone' or ' Def. Zone'
     event.zone = s[2].strip() if len(s) > 2 else ""
 
     # s[3] distance 'num ft.'
     event.dist = get_ft(s[3]) if len(s) > 3 else -1
+
+    match = shot_type_re.match(event.desc)
+    event.shot_type = match.group('shot_type') if match else ''
 
     event.shooter['playerType'] = 'shooter'
     event.participants = (event.shooter,)
@@ -120,7 +125,6 @@ a1_re = re.compile(r".*Assists?:\s*#(?P<a1_num>[0-9]{1,2})\s*(?P<a1_name>[A-Z \.
 a2_re = re.compile(r".*;\s*#(?P<a2_num>[0-9]{1,2})\s*(?P<a2_name>[A-Z \.\-\']+)\((?P<a2_a_count>[0-9]*)\)")
 zone_re = re.compile(r".*(?P<zone>[A-z]{3})\.\s*Zone")
 distance_re = re.compile(r".*(?P<distance>[0-9]+)\s* ft")
-shot_type_re = re.compile(r".*, (?P<shot_type>[A-z\-]+),")
 
 def parse_goal_desc_08(event):
     event.is_penalty_shot = 'penalty' in event.desc.lower()
@@ -240,6 +244,9 @@ def parse_miss_08(event):
         event.zone = s[3]
         event.dist = get_ft(s[4])
 
+    match = shot_type_re.match(event.desc)
+    if match:
+        event.shot_type = match.group('shot_type')
     event.shooter['playerType'] = 'shooter'
     event.participants = (event.shooter,)
 
@@ -327,6 +334,10 @@ def parse_block_08(event):
         else:  # Shot, not zone.
             event.shot_type = s[1]
             event.zone = ''
+
+    match = shot_type_re.match(event.desc)
+    if match:
+        event.shot_type = match.group('shot_type')
 
     event.shooter['playerType'] = 'shooter'
     event.blocked_by['playerType'] = 'blocker'

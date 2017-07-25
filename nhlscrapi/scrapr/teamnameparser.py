@@ -1,4 +1,4 @@
-
+import re
 from nhlscrapi.constants import TEAMS_BY_ABBR as ABB
 
 __abbr_alts = {
@@ -6,9 +6,9 @@ __abbr_alts = {
 }
 
 def get_abbreviation(team):
-    good_name = team_name_parser(team)
+    good_name = re.sub(r'[\.\s\-]', '', team_name_parser(team))
     for entry in ABB.items():
-        if entry[1].upper() == good_name.upper():
+        if re.sub(r'[\.\s]', '', entry[1].upper()) == good_name.upper():
             return entry[0]
 
 def team_abbr_parser(abr):
