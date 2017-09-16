@@ -104,7 +104,7 @@ class TOIRepBase(ReportLoader):
                         'sh_toi': self.__get_time(txt[6])
                     }
 
-                summ[per] = ps
+                    summ[per] = ps
 
             per_summ = per_summ.xpath('following-sibling::tr')
             if per_summ:
